@@ -8,15 +8,15 @@ namespace NewsWebMVC.Controllers
     {
         private readonly HttpClient _httpClient;
         private string _ServireLink = "https://localhost:7087/";
-        public AuthorController(HttpClient httpClient)
+        public AuthorController(HttpClient httpClient) 
         {
             _httpClient = httpClient;
         }
 
-       
+
         public async Task<IActionResult> Index()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(_ServireLink+"api/Author");
+            HttpResponseMessage response = await _httpClient.GetAsync(_ServireLink + "api/Author");
 
             if (response.IsSuccessStatusCode)
             {
@@ -29,7 +29,7 @@ namespace NewsWebMVC.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAuthor(int id)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(_ServireLink+$"api/Author/{id}");
+            HttpResponseMessage response = await _httpClient.GetAsync(_ServireLink + $"api/Author/{id}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -46,13 +46,13 @@ namespace NewsWebMVC.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Create(AuthorViewModel viewModel) 
+        public async Task<IActionResult> Create(AuthorViewModel viewModel)
         {
             Author author = new()
             {
                 Name = viewModel.Name
             };
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(_ServireLink+"api/Author", author);
+            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(_ServireLink + "api/Author", author);
 
             if (response.IsSuccessStatusCode)
             {
@@ -64,7 +64,7 @@ namespace NewsWebMVC.Controllers
         }
         public async Task<IActionResult> Edit(int id)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(_ServireLink+$"api/Author/{id}");
+            HttpResponseMessage response = await _httpClient.GetAsync(_ServireLink + $"api/Author/{id}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -78,7 +78,7 @@ namespace NewsWebMVC.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Author author)
         {
-            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(_ServireLink+$"api/Author/{id}", author);
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(_ServireLink + $"api/Author/{id}", author);
 
             if (response.IsSuccessStatusCode)
             {
@@ -92,7 +92,7 @@ namespace NewsWebMVC.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             HttpResponseMessage response = await _httpClient.DeleteAsync(_ServireLink + $"api/Author/{id}");
-            if(response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 return RedirectToAction(nameof(Index));
             }

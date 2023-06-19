@@ -1,13 +1,40 @@
 ﻿@model List<Author>
-
-<a class="btn btn-primary" asp-action="Create">Add Author</a>
-@foreach(Author author in Model)
+@{
+    ViewData["Title"] = "All Authors";
+}
+<h2 class="align-content-center">All Authors</h2>
+<a class="btn btn-secondary" asp-action="Create">Add Author</a>
+@if (!Model.Any())
 {
-    <h1>@author.Id</h1>
-    <h1>@author.Name</h1>
-    <a asp-action="Delete"
-       onclick="return confirm('Are you sure you want to delete @author.Name ?')"
-       class="btn btn-danger"
-   asp-route-id="@author.Id">Delete</a>
-    <hr />
+    <div class="p-2">
+        <h2 class="alert-warning"> No Authors Found !</h2>
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0, j = 1; i < Model.Count; ++i, ++j)
+            {
+                <tr>
+                    <td>@j</td>
+                    <td>@Model[i].Name</td>
+                    <td>
+                        <a class="btn btn-secondary" asp-route-id="@Model[i].Id" asp-action="Edit">Edit</a>
+                        <a asp-action="Delete"
+                           onclick="return confirm('Are you sure you want to delete @Model[i].Name ?')"
+                           class="btn btn-danger"
+                   asp-route-id="@Model[i].Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }

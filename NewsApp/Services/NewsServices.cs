@@ -13,7 +13,7 @@ namespace NewsApp.Services
         }
 
         public async Task<List<News>> GetAll()
-            => await _context.News.ToListAsync();
+            => await _context.News.Include(n=>n.Author).ToListAsync();
 
         public async Task<List<News>> GetByAuthorId(int id)
         {
@@ -22,7 +22,7 @@ namespace NewsApp.Services
         
         public News GetById(int id)
         {
-            News news =_context.News.FirstOrDefault(x => x.Id == id);
+            News news =_context.News.Include(n=>n.Author).FirstOrDefault(x => x.Id == id);
             return news;
         }
         public async Task<News> Create(News entity)

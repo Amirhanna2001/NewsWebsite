@@ -16,6 +16,8 @@ builder.Services.AddScoped<INewsServices, NewsServices>();
 
 builder.Services.AddControllers();
 
+
+
 builder.Services.AddCors();//for other api can access 
 
 builder.Services.AddEndpointsApiExplorer();
@@ -33,7 +35,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseStaticFiles();
 app.MapControllers();
 
 app.Run();
