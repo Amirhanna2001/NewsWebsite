@@ -17,7 +17,7 @@ namespace NewsApp.Models
            ErrorMessage = "The DateColumn must be within today and a week from today.")]
         public DateTime PublicationDate { get; set; }
         public DateTime CreationDate { get; set; } =DateTime.Now;
-        public int AuthorId { get; set; }
+        public int AuthorId { get; set; } 
         public Author Author { get; set; }
     }
 }
