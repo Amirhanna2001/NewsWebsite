@@ -1,0 +1,13 @@
+﻿@model List<Author>
+
+<a class="btn btn-primary" asp-action="Create">Add Author</a>
+@foreach(Author author in Model)
+{
+    <h1>@author.Id</h1>
+    <h1>@author.Name</h1>
+    <a asp-action="Delete"
+       onclick="return confirm('Are you sure you want to delete @author.Name ?')"
+       class="btn btn-danger"
+   asp-route-id="@author.Id">Delete</a>
+    <hr />
+}
