@@ -6,6 +6,6 @@ namespace NewsApp.Dtos
     public class CreateNewsDto:NewsBaseDto
     {
         
-        public IFormFile Image { get; set; }
+        public string ImagePath { get; set; }
     }
 }

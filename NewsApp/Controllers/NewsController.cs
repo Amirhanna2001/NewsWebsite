@@ -47,17 +47,13 @@ namespace NewsApp.Controllers
             return Ok(await _newsServices.GetByAuthorId(authorId));
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromForm] CreateNewsDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateNewsDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
                 //TODO:return Errors
             }
-            if (!ImageValidation.IsValidSize(dto.Image))
-                return BadRequest("Max Allowed Image Size is 1MB");
-            if (!ImageValidation.IsAllowedExtention(dto.Image))
-                return BadRequest("Only Allowed Extentions Are .PNG & .JPG");
 
             if (!_authorServices.IsExsists(dto.AuthorId))
                 return BadRequest($"No Author found by id {dto.AuthorId}");
@@ -65,9 +61,6 @@ namespace NewsApp.Controllers
             if (!DateValidation.IsValidDateTime(dto.PublicationDate))
                 return BadRequest("Date Allowed From Today untill Weak from Today");
 
-            var files = Request.Form.Files;
-            if (!files.Any())
-                return BadRequest("Image Is Required ");
 
             News news = new()
             {
@@ -75,17 +68,18 @@ namespace NewsApp.Controllers
                 TheNews = dto.TheNews,
                 PublicationDate = dto.PublicationDate,
                 AuthorId = dto.AuthorId,
+                ImagePath = dto.ImagePath 
             };
-            news.ImagePath = ProcessUploadedFile(dto.Image);
+            //news.ImagePath = ProcessUploadedFile(dto.Image);
             await _newsServices.Create(news);
 
             return Ok(news);
                 
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromForm]UpdateNewsDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody]UpdateNewsDto dto)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
                 //TODO:Errors
@@ -97,34 +91,18 @@ namespace NewsApp.Controllers
             if (!_authorServices.IsExsists(dto.AuthorId))
                 return BadRequest($"No Author found by id {dto.AuthorId}");
 
-            if(dto.Image != null)
-            {
-                if (!ImageValidation.IsValidSize(dto.Image))
-                    return BadRequest("Max Allowed Image Size is 1MB");
-                if (!ImageValidation.IsAllowedExtention(dto.Image))
-                    return BadRequest("Only Allowed Extentions Are .PNG & .JPG");
-
-                if (!DateValidation.IsValidDateTime(dto.PublicationDate))
-                    return BadRequest("Date Allowed From Today untill Weak from Today");
-
-                if (!_authorServices.IsExsists(dto.AuthorId))
-                    return BadRequest($"No Author found by id {dto.AuthorId}");
-
-                var files = Request.Form.Files;
-                System.IO.File.Delete(news.ImagePath);
-
-                news.ImagePath = ProcessUploadedFile(dto.Image);
-
-            }
+            
+            
             news.title = dto.title;
             news.TheNews = dto.TheNews;
             news.AuthorId = dto.AuthorId;
             news.PublicationDate = dto.PublicationDate;
+            news.ImagePath = dto.ImagePath;
 
             _newsServices.Update(news);
             return Ok(news);
         }
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             News news = _newsServices.GetById(id);

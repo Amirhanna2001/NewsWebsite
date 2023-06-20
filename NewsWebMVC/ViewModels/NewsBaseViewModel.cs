@@ -1,17 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
+using NewsWebMVC.Models;
 
-namespace NewsWebMVC.Models
+namespace NewsWebMVC.ViewModels
 {
-    public class News
+    public class NewsBaseViewModel
     {
-        public int Id { get; set; }
         public string title { get; set; }
         [DataType(DataType.MultilineText), MaxLength(500)]
         public string TheNews { get; set; }
-        public string ImagePath { get; set; }
+        [DisplayName("Publication Date")]
         public DateTime PublicationDate { get; set; }
-        public DateTime CreationDate { get; set; } 
         public int AuthorId { get; set; }
-        public Author Author { get; set; }
+        public IEnumerable<Author>? Authors { get; set; }
     }
 }

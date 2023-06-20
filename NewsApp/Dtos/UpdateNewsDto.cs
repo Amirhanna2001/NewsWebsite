@@ -2,6 +2,5 @@
 {
     public class UpdateNewsDto:NewsBaseDto
     {
-        public IFormFile? Image;
     }
 }

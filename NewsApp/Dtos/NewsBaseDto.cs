@@ -10,5 +10,6 @@ namespace NewsApp.Dtos
 
         public DateTime PublicationDate { get; set; }
         public int AuthorId { get; set; }
+        public string ImagePath { get; set; }
     }
-}
+} 

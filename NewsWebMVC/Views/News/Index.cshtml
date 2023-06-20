@@ -10,10 +10,10 @@
             @foreach (News news in Model)
             {
 
-                image = NewsController.ImagesPath + "/"; //+ news.ImagePath;
+                image = NewsController.ImagesPath + "/" + news.ImagePath;
 
                 <div class="col-12">
-                    <div class="card mb-3">
+                    <div class="card mb-3"> 
                         <div class="row no-gutters">
                             <div class="col-md-2" >
                                 <img src="@image" class="img-fluid" alt="News Image">
@@ -37,7 +37,7 @@
                                                 Edit
                                             </a>
                                             <a onclick="return confirm('Are You Sure You Want to Delete @news.title news ?' )"
-                                                class="btn btn-danger js-delete" data-id="@news.Id"
+                                                class="btn btn-danger js-delete" 
                                                 asp-action="Delete" asp-route-id="@news.Id">
                                                 <i class="bi bi-trash"></i>
                                                 Delete

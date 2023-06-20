@@ -40,7 +40,6 @@ namespace NewsApp.Services
         public News Delete(News entity)
         {
             _context.News.Remove(entity);
-            File.Delete(entity.ImagePath);
             _context.SaveChanges();
             return entity;
         }
