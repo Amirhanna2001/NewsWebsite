@@ -2,7 +2,7 @@
 
 namespace NewsApp.Services
 {
-    public class UserServices : IUserServices
+    public class UserServices :IUserServices
     {
         private readonly UserManager<IdentityUser> _userManager;
 

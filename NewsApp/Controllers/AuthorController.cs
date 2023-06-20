@@ -36,7 +36,6 @@ namespace NewsApp.Controllers
 
             return Ok(author);
         }
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(AuthorDto dto)
         {

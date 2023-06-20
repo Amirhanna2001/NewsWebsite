@@ -1,0 +1,12 @@
+1-Clone the repo (Download the project)
+2-open NewsWebAPI Solution
+3-open Package Manager Console and type "Update Database"
+4-run the newsApp Project 
+5-run the NewsWebMVC Project 
+6-for admin username = SuperAdmin@News.com ,, Password = MyPassword1234
+
+
+I hope this be fine for you 
+I will be happy for any feed-back 
+
+Thanks For Your Time 
