@@ -1,0 +1,8 @@
+﻿@model List<string>
+@{
+    ViewData["Title"] = "Error";
+}
+@foreach(string error in Model)
+{
+    <h5 class="text-danger">@error</h5>
+}

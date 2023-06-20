@@ -4,6 +4,8 @@
     ViewData["Title"] = "All News";
 }
 <h2>All News</h2>
+<a class="btn btn-secondary" asp-action="Create">Add Author</a>
+
 <div class="mt-4" >
     @if(Model.Any()){
         <div class="row">
@@ -37,7 +39,7 @@
                                                 Edit
                                             </a>
                                             <a onclick="return confirm('Are You Sure You Want to Delete @news.title news ?' )"
-                                                class="btn btn-danger js-delete" 
+                                                class="btn btn-danger " 
                                                 asp-action="Delete" asp-route-id="@news.Id">
                                                 <i class="bi bi-trash"></i>
                                                 Delete

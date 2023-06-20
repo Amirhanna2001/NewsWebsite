@@ -3,6 +3,9 @@ using NewsWebMVC.Helper;
 using NewsWebMVC.Models;
 using NewsWebMVC.ViewModels;
 using Newtonsoft.Json;
+using System.ComponentModel;
+using System.Net;
+
 namespace NewsWebMVC.Controllers
 {
     public class NewsController : Controller
@@ -30,16 +33,51 @@ namespace NewsWebMVC.Controllers
 
             return View();
         }
+        public async Task<IActionResult> FilterByAuthor(int id)
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync(_serverLink + $"api/News/GetByAuthorId?authorId={id}");
+            if (response.IsSuccessStatusCode)
+            {
+                List<News> news = await response.Content.ReadAsAsync<List<News>>();
+                return View(nameof(Index), news);
+            }
+
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            var errorObject = JsonConvert.DeserializeObject<ErrorResponse>(errorResponse);
+
+            List<string> errors = new();
+            foreach (var error in errorObject.Errors)
+            {
+                foreach (var errorMessage in error.Value)
+                {
+                    errors.Add(errorMessage);
+                }
+            }
+            return View("Error", errors);
+        }
+
 
         public async Task<IActionResult> Details(int id)
         {
             HttpResponseMessage response = await _httpClient.GetAsync(_serverLink + $"api/News/{id}");
+            News news;
             if (response.IsSuccessStatusCode)
             {
-                News news = await response.Content.ReadAsAsync<News>();
+                news = await response.Content.ReadAsAsync<News>();
                 return View(news);
             }
-            return View();
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            var errorObject = JsonConvert.DeserializeObject<ErrorResponse>(errorResponse);
+
+            List<string> errors = new();
+            foreach (var error in errorObject.Errors)
+            {
+                foreach (var errorMessage in error.Value)
+                {
+                    errors.Add(errorMessage);
+                }
+            }
+            return View("Error", errors);
         }
         [HttpGet]
         public async Task<IActionResult> Create()
@@ -59,15 +97,9 @@ namespace NewsWebMVC.Controllers
             HttpResponseMessage response;
             if (!ModelState.IsValid)
             {
-                response = await _httpClient.GetAsync(_serverLink + $"api/Author");
-                if (response.IsSuccessStatusCode)
-                {
-                    viewModel.Authors = await response.Content.ReadAsAsync<List<Author>>();
-                    return View(viewModel);
-                }
-                return View();//Handl erorr 
+                viewModel.Authors = await GetAllAuthors();
+                return View(viewModel);
             }
-
 
             News news = new()
             {
@@ -75,13 +107,21 @@ namespace NewsWebMVC.Controllers
                 AuthorId = viewModel.AuthorId,
                 TheNews = viewModel.TheNews,
                 PublicationDate = viewModel.PublicationDate
-
             };
 
             if (!ImageValidation.IsValidSize(viewModel.Image))
-                return View("ImagePath","Max Allowed Image Size is 1MB");
+            {
+                ModelState.AddModelError("Image", "Max Allowed Image Size is 1MB");
+                viewModel.Authors = await GetAllAuthors();
+                return View(viewModel);
+            }
+
             if (!ImageValidation.IsAllowedExtention(viewModel.Image))
-                return View("ImagePath", "Only Allowed Extentions Are .PNG & .JPG");
+            {
+                ModelState.AddModelError("Image", "Only Allowed Extensions Are .PNG & .JPG");
+                viewModel.Authors = await GetAllAuthors();
+                return View(viewModel);
+            }
 
             news.ImagePath = _files.ProcessUploadedFile(viewModel.Image);
 
@@ -91,10 +131,26 @@ namespace NewsWebMVC.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
+            else if (response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                var errorResponse = await response.Content.ReadAsStringAsync();
+                var errorObject = JsonConvert.DeserializeObject<ErrorResponse>(errorResponse);
 
-            // Handle error case appropriately
+                ModelState.Clear();
+                foreach (var error in errorObject.Errors)
+                {
+                    foreach (var errorMessage in error.Value)
+                    {
+                        ModelState.AddModelError(error.Key, errorMessage);
+                    }
+                }
+                viewModel.Authors = await GetAllAuthors();
+                return View(viewModel);
+            }
+
             return View();
         }
+
         public async Task<IActionResult> Edit(int id)
         {
             HttpResponseMessage response = await _httpClient.GetAsync(_serverLink + $"api/News/{id}");
@@ -116,12 +172,23 @@ namespace NewsWebMVC.Controllers
                     viewModel.Authors = await response.Content.ReadAsAsync<List<Author>>();
                     return View(viewModel);
                 }
-                
+
                 return View(viewModel);//TODO:
 
             }
 
-            return View();
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            var errorObject = JsonConvert.DeserializeObject<ErrorResponse>(errorResponse);
+
+            List<string> errors = new();
+            foreach (var error in errorObject.Errors)
+            {
+                foreach (var errorMessage in error.Value)
+                {
+                    errors.Add(errorMessage);
+                }
+            }
+            return View("Error", errors);
         }
         [HttpPost]
         public async Task<IActionResult> Edit(int id, EditNewsViewModel viewModel)
@@ -131,7 +198,7 @@ namespace NewsWebMVC.Controllers
                 return BadRequest();
                 //TODO:Errors
             }
-            News news = new ();
+            News news = new();
 
 
             if (viewModel.Image != null)
@@ -142,7 +209,7 @@ namespace NewsWebMVC.Controllers
                     return View("Only Allowed Extentions Are .PNG & .JPG");
                 Console.WriteLine(viewModel.ImagePath);
                 _files.DeleteImage(viewModel.ImagePath);
-                viewModel.ImagePath =_files.ProcessUploadedFile(viewModel.Image);
+                viewModel.ImagePath = _files.ProcessUploadedFile(viewModel.Image);
             }
             news.ImagePath = viewModel.ImagePath;
             news.title = viewModel.title;
@@ -185,9 +252,24 @@ namespace NewsWebMVC.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-            return View();
-        }
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            var errorObject = JsonConvert.DeserializeObject<ErrorResponse>(errorResponse);
 
+            List<string> errors = new();
+            foreach (var error in errorObject.Errors)
+            {
+                foreach (var errorMessage in error.Value)
+                {
+                    errors.Add(errorMessage);
+                }
+            }
+            return View("Error", errors);
+        }
+        private async Task<IEnumerable<Author>> GetAllAuthors()
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync(_serverLink + "api/Author");
+            return (await response.Content.ReadAsAsync<List<Author>>());
+        }
 
     }
 }

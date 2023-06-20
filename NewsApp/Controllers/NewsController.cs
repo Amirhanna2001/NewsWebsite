@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NewsApp.Dtos;
 using NewsApp.Helper;
 using NewsApp.Models;
 using NewsApp.Services;
-using System;
-using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
+using System.Net;
 
 namespace NewsApp.Controllers
 {
@@ -15,12 +13,10 @@ namespace NewsApp.Controllers
     {
         private readonly INewsServices _newsServices;
         private readonly IAuthorServices _authorServices;
-        private readonly IHostingEnvironment _hostingEnvironment;
-        public NewsController(INewsServices newsServices, IAuthorServices authorServices, IHostingEnvironment hostingEnvironment)
+        public NewsController(INewsServices newsServices, IAuthorServices authorServices)
         {
             _newsServices = newsServices;
             _authorServices = authorServices;
-            _hostingEnvironment = hostingEnvironment;
         }
         [HttpGet]
         public async Task<IActionResult> GetAllNews()
@@ -30,20 +26,43 @@ namespace NewsApp.Controllers
         [HttpGet("{id}")]
         public IActionResult GetNewsById(int id)
         {
-            News news =  _newsServices.GetById(id);
+            News news = _newsServices.GetById(id);
 
             if (news == null)
-                return NotFound($"Not found News with id = {id}");
+            {
+                var validationProblemDetails = new ValidationProblemDetails
+                {
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Title = "One or more validation errors occurred.",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Errors = {
+                   { "Id", new[] { $"Not found News with id = {id}" } }
+                      }
+                };
+
+                return new BadRequestObjectResult(validationProblemDetails);
+            }
 
             return Ok(news);
         }
-
         [HttpGet("GetByAuthorId")]
         public async Task<IActionResult> GetNewsByAuthorId(int authorId)
         {
             Author author = _authorServices.GetById(authorId);
             if (author == null)
-                return NotFound($"No Author With Id = {authorId}");
+            {
+                var validationProblemDetails = new ValidationProblemDetails
+                {
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Title = "One or more validation errors occurred.",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Errors = {
+                   { "Id", new[] { $"No Author With Id = {authorId}" } }
+                      }
+                };
+
+                return new BadRequestObjectResult(validationProblemDetails);
+            }
             return Ok(await _newsServices.GetByAuthorId(authorId));
         }
         [HttpPost]
@@ -51,33 +70,55 @@ namespace NewsApp.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();
-                //TODO:return Errors
+                List<string> errors = ModelState.Values.SelectMany(v => v.Errors)
+                                               .Select(e => e.ErrorMessage)
+                                               .ToList();
+                return BadRequest(errors);
             }
 
             if (!_authorServices.IsExsists(dto.AuthorId))
-                return BadRequest($"No Author found by id {dto.AuthorId}");
+            {
+                var validationProblemDetails = new ValidationProblemDetails
+                {
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Title = "One or more validation errors occurred.",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Errors = {
+                   { "AuthorId", new[] { $"No Author found by id {dto.AuthorId}" } }
+                      }
+                };
+
+                return new BadRequestObjectResult(validationProblemDetails);
+            }
 
             if (!DateValidation.IsValidDateTime(dto.PublicationDate))
-                return BadRequest("Date Allowed From Today untill Weak from Today");
+            {
+                var validationProblemDetails = new ValidationProblemDetails
+                {
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Title = "One or more validation errors occurred.",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Errors = {
+                   { "PublicationDate", new[] { "Date Allowed From Today untill Weak from Today" } }
+                      }
+                };
 
-
+                return new BadRequestObjectResult(validationProblemDetails);
+            }
             News news = new()
             {
                 title = dto.title,
                 TheNews = dto.TheNews,
                 PublicationDate = dto.PublicationDate,
                 AuthorId = dto.AuthorId,
-                ImagePath = dto.ImagePath 
+                ImagePath = dto.ImagePath
             };
-            //news.ImagePath = ProcessUploadedFile(dto.Image);
             await _newsServices.Create(news);
-
             return Ok(news);
-                
+
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody]UpdateNewsDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateNewsDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -86,13 +127,37 @@ namespace NewsApp.Controllers
             }
             News news = _newsServices.GetById(id);
             if (news == null)
-                return BadRequest($"No News Found By Id = {id}");
+            {
+                var validationProblemDetails = new ValidationProblemDetails
+                {
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Title = "One or more validation errors occurred.",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Errors = {
+                   { "Id", new[] { $"Not found News with id = {id}" } }
+                      }
+                };
+
+                return new BadRequestObjectResult(validationProblemDetails);
+            }
 
             if (!_authorServices.IsExsists(dto.AuthorId))
-                return BadRequest($"No Author found by id {dto.AuthorId}");
+            {
+                var validationProblemDetails = new ValidationProblemDetails
+                {
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Title = "One or more validation errors occurred.",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Errors = {
+                   { "AuthorId", new[] { $"No Author found by id {dto.AuthorId}" } }
+                      }
+                };
 
-            
-            
+                return new BadRequestObjectResult(validationProblemDetails);
+            }
+
+
+
             news.title = dto.title;
             news.TheNews = dto.TheNews;
             news.AuthorId = dto.AuthorId;
@@ -106,29 +171,24 @@ namespace NewsApp.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             News news = _newsServices.GetById(id);
-            if (news == null) return NotFound($"No News With Id = {id}");
+            if (news == null)
+            {
+                var validationProblemDetails = new ValidationProblemDetails
+                {
+                    Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                    Title = "One or more validation errors occurred.",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Errors = {
+                   { "AuthorId", new[] { $"No News found by id {id}" } }
+                   }
+                };
+
+                return new BadRequestObjectResult(validationProblemDetails);
+
+            }
 
             _newsServices.Delete(news);
             return Ok(news);
         }
-        private string ProcessUploadedFile(IFormFile image)
-        {
-            string uniqueFileName = null;
-            if (image != null)
-            {
-
-                string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "Images", "News");
-                uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    image.CopyTo(fileStream);
-                }
-
-            }
-
-            return uniqueFileName;
-        }
-       
     }
 }

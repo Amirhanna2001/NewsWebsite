@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NewsWebMVC.Models;
 using NewsWebMVC.ViewModels;
+using Newtonsoft.Json;
 
 namespace NewsWebMVC.Controllers
 {
@@ -24,7 +25,7 @@ namespace NewsWebMVC.Controllers
                 return View(authors);
             }
 
-            return View(); // Handle error case appropriately
+            return View("Error"); 
         }
         [HttpGet]
         public async Task<IActionResult> GetAuthor(int id)
@@ -37,7 +38,13 @@ namespace NewsWebMVC.Controllers
                 return View(author);
             }
 
-            return View(); // Handle error case appropriately
+            string errorResponse = await response.Content.ReadAsStringAsync();
+            List<string> errors = new()
+            {
+                errorResponse
+            };
+           
+            return View("Error", errors);
         }
 
         [HttpGet]
@@ -59,8 +66,17 @@ namespace NewsWebMVC.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Handle error case appropriately
-            return View();
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            var errorObject = JsonConvert.DeserializeObject<ErrorResponse>(errorResponse);
+
+            foreach (var error in errorObject.Errors)
+            {
+                foreach (var errorMessage in error.Value)
+                {
+                    ModelState.AddModelError("Name", errorMessage);
+                }
+            }
+            return View(author);
         }
         public async Task<IActionResult> Edit(int id)
         {
@@ -72,7 +88,7 @@ namespace NewsWebMVC.Controllers
                 return View(author);
             }
 
-            return View(); // Handle error case appropriately
+           return  View();
         }
 
         [HttpPost]
@@ -85,7 +101,16 @@ namespace NewsWebMVC.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Handle error case appropriately
+            var errorResponse = await response.Content.ReadAsStringAsync();
+            var errorObject = JsonConvert.DeserializeObject<ErrorResponse>(errorResponse);
+
+            foreach (var error in errorObject.Errors)
+            {
+                foreach (var errorMessage in error.Value)
+                {
+                    ModelState.AddModelError("Name", errorMessage);
+                }
+            }
             return View(author);
         }
 
@@ -96,7 +121,11 @@ namespace NewsWebMVC.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-            return View();
+            string errorResponse = await response.Content.ReadAsStringAsync();
+
+            List<string> errors = new() { errorResponse};
+           
+            return View("Error", errors);
         }
 
     }

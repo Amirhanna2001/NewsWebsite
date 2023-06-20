@@ -7,7 +7,8 @@
     <div class="mb-3 col-8 pb-2">
         <label asp-for="Name" class="form-label"></label>
         <input asp-for="Name" class="form-control" />
+        <span class="text-danger" asp-validation-for="Name"></span>
     </div>
-    <span class="text-danger" asp-validation-for="Name"></span>
+    
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
