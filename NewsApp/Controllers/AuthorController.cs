@@ -1,5 +1,6 @@
 ﻿using Humanizer;
 using Humanizer.Localisation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewsApp.Dtos;
@@ -35,6 +36,7 @@ namespace NewsApp.Controllers
 
             return Ok(author);
         }
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(AuthorDto dto)
         {

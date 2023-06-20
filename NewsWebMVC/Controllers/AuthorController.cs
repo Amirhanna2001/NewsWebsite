@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using NewsWebMVC.Models;
 using NewsWebMVC.ViewModels;
 using Newtonsoft.Json;
@@ -8,8 +10,9 @@ namespace NewsWebMVC.Controllers
     public class AuthorController : Controller
     {
         private readonly HttpClient _httpClient;
+        private readonly UserManager<IdentityUser> _userManager;
         private string _ServireLink = "https://localhost:7087/";
-        public AuthorController(HttpClient httpClient) 
+        public AuthorController(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
